@@ -1,0 +1,1 @@
+C:\Users\hzfhzf\AppData\Local\Programs\Python\Python38-32\python.exe scripts/experiments.py
