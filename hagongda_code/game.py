@@ -8,7 +8,8 @@ class GameState:
         self.not_appeared = not_appeared
         self.enemy_hand = enemy_hand
         self.player = player
-
+    
+    #信息集
     def inf_set(self):
         # 自己的牌 + 还没出现过的牌 + 对手最近一次的出牌
         s1 = '.'.join([str(i) for i in self.own_pokers])

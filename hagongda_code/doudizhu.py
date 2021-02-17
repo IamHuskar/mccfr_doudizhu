@@ -72,6 +72,7 @@ class DouDiZhu:
 
     def _toString(self, comb):
         s = str(comb['type']) + ':' + str(comb['main']) + ':' + '.'.join([str(i) for i in comb['component']])
+        print(s)
         return s
 
     def _toComb(self, s):

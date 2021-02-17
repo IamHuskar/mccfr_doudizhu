@@ -6,7 +6,7 @@ class OutcomeSamplingMCCFR:
         self.cumulative_regret = {}
         self.cumulative_incr = {}
         self._expl = 0.6
-
+    #每次cfr是每次探索一次。
     def iteration(self):
         self._episode(self.root, 0, 1, 1, 1)
         self._episode(self.root, 1, 1, 1, 1)
@@ -48,6 +48,7 @@ class OutcomeSamplingMCCFR:
             return baseline
 
     def _episode(self, state, update_player, my_reach, opp_reach, sample_reach):
+        #如果是终结点
         if state.is_terminal():
             return 1 if state.player == update_player else -1
 
