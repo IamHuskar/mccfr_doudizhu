@@ -77,11 +77,15 @@ class DouDiZhu:
 
     def _toComb(self, s):
         s_list = s.split(':')
+        #type牌型
+        #main是主要的牌的值
+        #component 是牌的内容
         comb = {
             'type': int(s_list[0]),
             'main': int(s_list[1]),
             'component': [int(i) for i in s_list[2].split('.')] if len(s_list[2]) else []
         }
+        print("comb ",comb)
         return comb
 
     def HandtoString(self, hand):
@@ -174,7 +178,8 @@ class DouDiZhu:
 
         # 返回所有可能的出牌类型
         return [self._toString(comb) for comb in combs]
-
+        
+    #得到可以打败的牌的组合
     def get_feasible_hand(self, my_pokers, enemy_hand=None):
         # 牌局终止的边界条件
         if len(my_pokers) == 0:
@@ -187,10 +192,14 @@ class DouDiZhu:
             enemy_hand = self._toComb(enemy_hand)
 
         feasible_combs = []
+        #根据我的手牌 取得 所有的牌型组合
         for current_hand in self.get_all_hands(my_pokers):
+            #对于每一手牌
             current_hand = self._toComb(current_hand)
             if self._can_beat(enemy_hand, current_hand) or \
                     (enemy_hand['type'] != COMB_TYPE.PASS and current_hand['type'] == COMB_TYPE.PASS):
                 feasible_combs.append(current_hand)
 
-        return [self._toString(comb) for comb in feasible_combs]
+        feah= [self._toString(comb) for comb in feasible_combs]
+        print("我的牌 ",my_pokers,"敌人的牌",enemy_hand,"我可以出的牌",feah)
+        return feah

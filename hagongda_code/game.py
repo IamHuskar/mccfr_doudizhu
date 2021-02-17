@@ -33,9 +33,10 @@ class RootChanceGameState(GameState):
         self.last_chance = None
 
     def play(self):
+        
         enemy_poker = sorted(random.sample(self.not_appeared, self.enemy_pokers_size))
-        child = PlayerGameState(self.doudizhu, self.own_pokers,
-                                enemy_poker, self.not_appeared, 0, self.enemy_hand)
+        print("根节点 root play 采样 未知牌",enemy_poker)
+        child = PlayerGameState(self.doudizhu, self.own_pokers,enemy_poker, self.not_appeared, 0, self.enemy_hand)
         self.last_chance = child
         return child
 
@@ -59,7 +60,6 @@ class PlayerGameState(GameState):
         super().__init__(doudizhu, own_pokers, not_appeared, enemy_hand, player)
         self.enemy_poker = enemy_poker
         self.enemy_hand = enemy_hand
-
         self._child = {}
         self.actions = self.doudizhu.get_feasible_hand(own_pokers, enemy_hand)
 

@@ -26,9 +26,12 @@ class OutcomeSamplingMCCFR:
         self.cumulative_regret[info][action] += regret
 
     def _regret_matching(self, state):
+        #状态的信息集和动作。
         info, actions = state.inf_set(), state.actions
+        #如果信息集不在 累计遗憾值当中。设置为NULL
         if info not in self.cumulative_regret:
             self.cumulative_regret[info] = {}
+        #对于状态的每一个动作。
         for a in actions:
             if a not in self.cumulative_regret[info]:
                 self.cumulative_regret[info][a] = 0
@@ -37,10 +40,10 @@ class OutcomeSamplingMCCFR:
             policy = {a: max(self.cumulative_regret[info][a], 0) / sum_regret for a in actions}
         else:
             policy = {a: 1./len(actions) for a in actions}
+        print("policy",policy)
         return policy
 
-    def _baseline_corrected_child_value(self, sampled_action,
-                                        action, child_value, sample_prob):
+    def _baseline_corrected_child_value(self, sampled_action, action, child_value, sample_prob):
         baseline = 0
         if action == sampled_action:
             return baseline + (child_value - baseline) / sample_prob
@@ -48,20 +51,25 @@ class OutcomeSamplingMCCFR:
             return baseline
 
     def _episode(self, state, update_player, my_reach, opp_reach, sample_reach):
-        #如果是终结点
+        #如果是终结点。如果状态的玩家是 当前更新的玩家。返回奖励1 否则返回奖励-1 
         if state.is_terminal():
+            print("当前是终结节点状态 状态的玩家是 ",state.player," 更新的玩家是 ",update_player)
             return 1 if state.player == update_player else -1
-
+        #如果是机会节点。调用play返回
         if state.is_chance_node():
+            print("机会节点 ")
             new_state = state.play()
+            #采样以后返回一个新的状态。从新的状态开始探索
             return self._episode(new_state, update_player, my_reach, opp_reach, sample_reach)
-
+        
+        #遗憾匹配
         policy = self._regret_matching(state)
         if state.player == update_player:
             sample_policy = {a: self._expl * 1./len(policy) + (1.0 - self._expl) * policy[a]
                              for a in policy}
         else:
             sample_policy = policy
+        
         sampled_action = random.choices(list(sample_policy.keys()), list(sample_policy.values()))[0]
         new_state = state.play(sampled_action)
         if state.player == update_player:
