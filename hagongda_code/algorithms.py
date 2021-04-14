@@ -31,14 +31,19 @@ class OutcomeSamplingMCCFR:
         #如果信息集不在 累计遗憾值当中。设置为NULL
         if info not in self.cumulative_regret:
             self.cumulative_regret[info] = {}
-        #对于状态的每一个动作。
+        #对于状态的每一个动作。信息集的每个动作的遗憾值设置为0
+        print("信息集 ",info)
         for a in actions:
             if a not in self.cumulative_regret[info]:
                 self.cumulative_regret[info][a] = 0
+
+        #取正值的和。对于所有信息集的所有值。因为信息集里面有的是每个动作。其实也就是当前动作的对应概率的值。初始都是0.所以采用均值策略
         sum_regret = sum([max(v, 0) for v in self.cumulative_regret[info].values()])
+        
         if sum_regret > 0:
             policy = {a: max(self.cumulative_regret[info][a], 0) / sum_regret for a in actions}
         else:
+            #采用均值策略。每个概率都是一样的。
             policy = {a: 1./len(actions) for a in actions}
         print("policy",policy)
         return policy
@@ -49,7 +54,8 @@ class OutcomeSamplingMCCFR:
             return baseline + (child_value - baseline) / sample_prob
         else:
             return baseline
-
+    
+    #初始的root stat  player 和gameplayer都是0
     def _episode(self, state, update_player, my_reach, opp_reach, sample_reach):
         #如果是终结点。如果状态的玩家是 当前更新的玩家。返回奖励1 否则返回奖励-1 
         if state.is_terminal():
@@ -64,14 +70,19 @@ class OutcomeSamplingMCCFR:
         
         #遗憾匹配
         policy = self._regret_matching(state)
+        
+        #如果当前玩家是更新玩家。平滑处理
         if state.player == update_player:
-            sample_policy = {a: self._expl * 1./len(policy) + (1.0 - self._expl) * policy[a]
-                             for a in policy}
+            sample_policy = {a: self._expl * 1./len(policy) + (1.0 - self._expl) * policy[a] for a in policy}
         else:
             sample_policy = policy
         
+        #取得一个动作 执行这个动作
         sampled_action = random.choices(list(sample_policy.keys()), list(sample_policy.values()))[0]
+        
+        #返回play以后的子节点状态
         new_state = state.play(sampled_action)
+        
         if state.player == update_player:
             new_my_reach = my_reach * policy[sampled_action]
             new_opp_reach = opp_reach
@@ -79,6 +90,7 @@ class OutcomeSamplingMCCFR:
             new_my_reach = my_reach
             new_opp_reach = opp_reach * policy[sampled_action]
         new_sample_reach = sample_reach * sample_policy[sampled_action]
+        
         child_value = self._episode(new_state, update_player, new_my_reach,
                                     new_opp_reach, new_sample_reach)
         child_values = {}
